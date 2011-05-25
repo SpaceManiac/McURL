@@ -28,10 +28,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.application.SingleFrameApplication;
 
 /**
@@ -44,12 +41,7 @@ public class McUrlApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        if (address.equalsIgnoreCase("settings")) {
-            address = "Settings pne";
-            show(new McUrlView(this));
-        } else {
-            show(new McUrlView(this));
-        }
+        show(new McUrlView(this));
     }
     
     /**
@@ -68,28 +60,39 @@ public class McUrlApp extends SingleFrameApplication {
     
     /**
      * Parse out username, password, and server address using URL given.
-     * @param url The URL to parse.
+     * @param text The URL to parse.
      */
-    private static void parseArgs(URL url) {
+    private static void parseArgs(String text) {
         // Basic init
         username = "";
         password = "";
         address = "";
         
-        // Get address and port
-        address = url.getHost();
-        if (url.getPort() >= 0) address += ":" + url.getPort();
-        
+        // Trim off leading and trailing slashes, and leading 'minecraft:'
+        if (text.indexOf("minecraft:") == 0) {
+            text = text.substring(10);
+        }
+        while (text.charAt(0) == '/') {
+            text = text.substring(1);
+        }
+        while (text.charAt(text.length() - 1) == '/') {
+            text = text.substring(0, text.length() - 1);
+        }
+
         // See if we need to parse out username and password
-        if (url.getUserInfo() != null) {
-            String info = url.getUserInfo();
-            int colon = info.indexOf(":");
+        int at = text.indexOf("@");
+        if (at >= 0) {
+            address = text.substring(at + 1);
+            String prior = text.substring(0, at);
+            int colon = prior.indexOf(":");
             if (colon >= 0) {
-                username = info.substring(0, colon);
-                password = info.substring(colon + 1);
+                username = prior.substring(0, colon);
+                password = prior.substring(colon + 1);
             } else {
-                username = info;
+                username = prior;
             }
+        } else {
+            address = text;
         }
 
         // Pull from last login if we need to
@@ -131,12 +134,8 @@ public class McUrlApp extends SingleFrameApplication {
     public static void main(String[] args) {
         System.out.println("McURL v1.0 by Tad Hardesty");
 
-        if (args.length != 1) return;
-        try {
-            parseArgs(new URL(args[0]));
-        } catch (MalformedURLException ex) {
-            return;
-        }
+        if (args.length != 1) return;        
+        parseArgs(args[0]);
 
         File launcher = new File("minecraft.jar");
         if (!launcher.exists()) {
