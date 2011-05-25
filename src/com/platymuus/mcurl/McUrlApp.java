@@ -41,7 +41,11 @@ public class McUrlApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        show(new McUrlView(this));
+        if (address.equalsIgnoreCase("settings")) {
+            show(new SettingsView(this));
+        } else {
+            show(new McUrlView(this));
+        }
     }
     
     /**
