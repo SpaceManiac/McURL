@@ -19,21 +19,21 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jLabel1" alignment="1" pref="252" max="32767" attributes="0"/>
-                      <Component id="jLabel4" alignment="0" pref="252" max="32767" attributes="0"/>
-                      <Component id="jButton1" alignment="1" pref="252" max="32767" attributes="0"/>
+                      <Component id="titleLabel" alignment="1" pref="252" max="32767" attributes="0"/>
+                      <Component id="urlLabel" alignment="0" pref="252" max="32767" attributes="0"/>
+                      <Component id="loginButton" alignment="1" pref="252" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel3" pref="57" max="32767" attributes="1"/>
-                              <Component id="jLabel2" pref="57" max="32767" attributes="1"/>
+                              <Component id="passwordLabel" pref="57" max="32767" attributes="1"/>
+                              <Component id="usernameLabel" pref="57" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="jTextField1" max="32767" attributes="1"/>
-                              <Component id="jPasswordField1" alignment="1" min="-2" pref="185" max="-2" attributes="1"/>
+                              <Component id="usernameField" max="32767" attributes="1"/>
+                              <Component id="passwordField" alignment="1" min="-2" pref="185" max="-2" attributes="1"/>
                           </Group>
                       </Group>
-                      <Component id="jLabel5" alignment="0" pref="252" max="32767" attributes="0"/>
+                      <Component id="aboutLabel" alignment="0" pref="252" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -43,30 +43,30 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jTextField1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="usernameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="usernameField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jPasswordField1" min="-2" max="-2" attributes="0"/>
+                      <Component id="passwordLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="passwordField" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                  <Component id="loginButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace pref="8" max="32767" attributes="0"/>
-                  <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                  <Component id="aboutLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="jLabel1">
+        <Component class="javax.swing.JLabel" name="titleLabel">
           <Properties>
             <Property name="font" type="java.awt.Font" resourceKey="titleLabel.font"/>
             <Property name="horizontalAlignment" type="int" value="0"/>
@@ -74,7 +74,7 @@
             <Property name="name" type="java.lang.String" value="titleLabel" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel2">
+        <Component class="javax.swing.JLabel" name="usernameLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="text" type="java.lang.String" resourceKey="usernameLabel.text"/>
@@ -82,7 +82,7 @@
             <Property name="name" type="java.lang.String" value="usernameLabel" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel3">
+        <Component class="javax.swing.JLabel" name="passwordLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="text" type="java.lang.String" resourceKey="passwordLabel.text"/>
@@ -90,19 +90,19 @@
             <Property name="name" type="java.lang.String" value="passwordLabel" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="jTextField1">
+        <Component class="javax.swing.JTextField" name="usernameField">
           <Properties>
             <Property name="text" type="java.lang.String" resourceKey="usernameEntry.text"/>
             <Property name="name" type="java.lang.String" value="usernameEntry" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JPasswordField" name="jPasswordField1">
+        <Component class="javax.swing.JPasswordField" name="passwordField">
           <Properties>
             <Property name="text" type="java.lang.String" resourceKey="passwordEntry.text"/>
             <Property name="name" type="java.lang.String" value="passwordEntry" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton1">
+        <Component class="javax.swing.JButton" name="loginButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
               <action class="com.platymuus.mcurl.McProtocolView" id="launchGame" methodName="launchGame"/>
@@ -111,7 +111,7 @@
             <Property name="name" type="java.lang.String" value="loginButton" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel4">
+        <Component class="javax.swing.JLabel" name="urlLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="0"/>
             <Property name="text" type="java.lang.String" resourceKey="addrLabel.text"/>
@@ -119,13 +119,13 @@
             <Property name="name" type="java.lang.String" value="addrLabel" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel5">
+        <Component class="javax.swing.JLabel" name="aboutLabel">
           <Properties>
-            <Property name="font" type="java.awt.Font" resourceKey="jLabel5.font"/>
+            <Property name="font" type="java.awt.Font" resourceKey="aboutLabel.font"/>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" resourceKey="jLabel5.text"/>
-            <Property name="toolTipText" type="java.lang.String" resourceKey="jLabel5.toolTipText"/>
-            <Property name="name" type="java.lang.String" value="jLabel5" noResource="true"/>
+            <Property name="text" type="java.lang.String" resourceKey="aboutLabel.text"/>
+            <Property name="toolTipText" type="java.lang.String" resourceKey="aboutLabel.toolTipText"/>
+            <Property name="name" type="java.lang.String" value="aboutLabel" noResource="true"/>
           </Properties>
         </Component>
       </SubComponents>

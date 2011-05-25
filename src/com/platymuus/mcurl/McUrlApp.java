@@ -23,9 +23,12 @@
  */
 package com.platymuus.mcurl;
 
-import java.io.*;
-import java.net.*;
-import org.jdesktop.application.Application;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import org.jdesktop.application.SingleFrameApplication;
 
 /**
@@ -38,22 +41,13 @@ public class McUrlApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        debug("Showing view.");
         show(new McUrlView(this));
     }
-    static String address, username, password;
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
+    
+    /**
+     * Strings representing the address, username, and password chosen.
+     */
+    public static String address, username, password;
 
     /**
      * This method is to initialize the specified window by injecting resources.
@@ -63,64 +57,18 @@ public class McUrlApp extends SingleFrameApplication {
     @Override
     protected void configureWindow(java.awt.Window root) {
     }
-
+    
     /**
-     * A convenient static getter for the application instance.
-     * @return the instance of McUrlApp
+     * Parse out username, password, and server address using URL given.
+     * @param text The URL to parse.
      */
-    public static McUrlApp getApplication() {
-        return Application.getInstance(McUrlApp.class);
-    }
-
-    public static boolean debugging;
-    public static PrintWriter debugLog;
-
-    public static void debug(String s) {
-        if (debugging) {
-            debugLog.println(s);
-            debugLog.flush();
-        }
-    }
-
-    /**
-     * Main method launching the application.
-     */
-    public static void main(String[] args) {
-        System.out.println("McURL v1.0 by Tad Hardesty");
-        
+    private static void parseArgs(String text) {
+        // Basic init
         username = "";
         password = "";
         address = "";
-
-        if (args.length != 1) {
-            /*
-            debugging = true;
-            try {
-            debugLog = new PrintWriter(new FileWriter(new File("mcurl.log")));
-            debug("Asdf, the URL isn't being passed!");
-            }
-            catch (IOException ex) {
-                debugging = false;
-            }
-            */
-            return;
-        }
-
-        String text = args[0];
-        if (text.indexOf("debug") == text.length() - 5) {
-            text = text.substring(0, text.length() - 5);
-            debugging = true;
-            try {
-                debugLog = new PrintWriter(new FileWriter(new File("mcurl.log")));
-                debug("== Debug log begin ==");
-            }
-            catch (IOException ex) {
-                debugging = false;
-            }
-        }
         
-        debug("Url: " + text + "debug");
-
+        // Trim off leading and trailing slashes, and leading 'minecraft:'
         if (text.indexOf("minecraft:") == 0) {
             text = text.substring(10);
         }
@@ -130,8 +78,8 @@ public class McUrlApp extends SingleFrameApplication {
         while (text.charAt(text.length() - 1) == '/') {
             text = text.substring(0, text.length() - 1);
         }
-        debug("Extracted server: " + text);
 
+        // See if we need to parse out username and password
         int at = text.indexOf("@");
         if (at >= 0) {
             address = text.substring(at + 1);
@@ -146,49 +94,54 @@ public class McUrlApp extends SingleFrameApplication {
         } else {
             address = text;
         }
-        debug("Username from URL: " + username);
-        debug("Password from URL: " + password);
 
-        // Grab minecraft.jar
-        File launcher = new File("minecraft.jar");
-        if (!launcher.exists()) {
-            debug("Downloading launcher jar.");
-            try {
-                String url = "https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar";
-                BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(launcher), 1024);
-                byte data[] = new byte[1024];
-                int count;
-                while ((count = in.read(data, 0, 1024)) >= 0) {
-                    out.write(data, 0, count);
-                }
-                out.close();
-                in.close();
-                debug("Success.");
-            } catch (IOException ex) {
-                debug("Failure.");
-                return;
-            }
-        } else {
-            debug("Launcher jar already exists.");
-        }
-
-        debug("Grabbing login info");
+        // Pull from last login if we need to
         LastLogin.calculate();
-
         if (username.equals("")) {
             username = LastLogin.username;
         }
         if (password.equals("") && username.equalsIgnoreCase(LastLogin.username)) {
             password = LastLogin.password;
         }
+        
         username = username.trim();
-        debug("Lastlogin username: " + LastLogin.username);
-        debug("Lastlogin password: " + LastLogin.password);
-        debug("Resultant username: " + username);
-        debug("Resultant password: " + password);
+    }
+    
+    /**
+     * Download the launcher jar from Amazon S3.
+     * @param launcher A File representing the location to download to.
+     */
+    private static void getLauncher(File launcher) {
+        try {
+            String url = "https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar";
+            BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(launcher), 1024);
+            byte data[] = new byte[1024];
+            int count;
+            while ((count = in.read(data, 0, 1024)) >= 0) {
+                out.write(data, 0, count);
+            }
+            out.close();
+            in.close();
+        } catch (IOException ex) {
+            address = "Error! " + ex.getMessage();
+        }
+    }
 
-        debug("Launching app.");
+    /**
+     * Main method launching the application.
+     */
+    public static void main(String[] args) {
+        System.out.println("McURL v1.0 by Tad Hardesty");
+
+        if (args.length != 1) return;        
+        parseArgs(args[0]);
+
+        File launcher = new File("minecraft.jar");
+        if (!launcher.exists()) {
+            getLauncher(launcher);
+        }
+        
         launch(McUrlApp.class, args);
     }
 }
