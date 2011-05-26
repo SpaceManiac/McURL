@@ -23,6 +23,8 @@
  */
 package com.platymuus.mcurl;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
@@ -31,32 +33,37 @@ import java.io.IOException;
 /**
  * The application's main frame.
  */
-public class SettingsView extends FrameView {
+public final class SettingsView extends FrameView {
 
     public SettingsView(SingleFrameApplication app) {
         super(app);
-
         initComponents();
-
         getFrame().setResizable(false);
         getFrame().pack();
-
-        urlLabel.setText(McUrlApp.address);
-        usernameField.setText(McUrlApp.username);
-        passwordField.setText(McUrlApp.password);
+        
+        autofillCheck.setSelected(McUrlApp.properties.getProperty("autofill", "on").equalsIgnoreCase("on"));
+        noconfirmCheck.setSelected(McUrlApp.properties.getProperty("noconfirm", "off").equalsIgnoreCase("on"));
+        overrideCheck.setSelected(McUrlApp.properties.getProperty("override", "off").equalsIgnoreCase("on"));
+        disableCheck();
+    }
+    
+    @Action
+    public void disableCheck() {
+        if (!autofillCheck.isSelected()) noconfirmCheck.setSelected(false);
+        noconfirmCheck.setEnabled(autofillCheck.isSelected());
     }
 
     @Action
-    public void launchGame() {
+    public void save() {
+        McUrlApp.properties.setProperty("autofill", autofillCheck.isSelected() ? "on" : "off");
+        McUrlApp.properties.setProperty("noconfirm", noconfirmCheck.isSelected() ? "on" : "off");
+        McUrlApp.properties.setProperty("override", overrideCheck.isSelected() ? "on" : "off");
         try {
-            Runtime.getRuntime().exec(new String[] {
-                "java", "-cp", "minecraft.jar", "net.minecraft.LauncherFrame",
-                usernameField.getText(), passwordField.getText(), McUrlApp.address
-            });
-            Runtime.getRuntime().exit(0);
+            McUrlApp.properties.store(new FileOutputStream(new File("mcurl.properties")), "McURL settings file");
         } catch (IOException ex) {
-            urlLabel.setText("Error! " + ex.getMessage());
+            // not much we can do about it
         }
+        Runtime.getRuntime().exit(0);
     }
 
     /** This method is called from within the constructor to
@@ -70,13 +77,12 @@ public class SettingsView extends FrameView {
 
         mainPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        usernameLabel = new javax.swing.JLabel();
-        passwordLabel = new javax.swing.JLabel();
-        usernameField = new javax.swing.JTextField();
-        passwordField = new javax.swing.JPasswordField();
-        loginButton = new javax.swing.JButton();
-        urlLabel = new javax.swing.JLabel();
+        saveButton = new javax.swing.JButton();
         aboutLabel = new javax.swing.JLabel();
+        cancelButton = new javax.swing.JButton();
+        autofillCheck = new javax.swing.JCheckBox();
+        overrideCheck = new javax.swing.JCheckBox();
+        noconfirmCheck = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
 
@@ -90,37 +96,31 @@ public class SettingsView extends FrameView {
         titleLabel.setText(resourceMap.getString("titleLabel.text")); // NOI18N
         titleLabel.setName("titleLabel"); // NOI18N
 
-        usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        usernameLabel.setText(resourceMap.getString("usernameLabel.text")); // NOI18N
-        usernameLabel.setToolTipText(resourceMap.getString("usernameLabel.toolTipText")); // NOI18N
-        usernameLabel.setName("usernameLabel"); // NOI18N
-
-        passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        passwordLabel.setText(resourceMap.getString("passwordLabel.text")); // NOI18N
-        passwordLabel.setToolTipText(resourceMap.getString("passwordLabel.toolTipText")); // NOI18N
-        passwordLabel.setName("passwordLabel"); // NOI18N
-
-        usernameField.setText(resourceMap.getString("usernameEntry.text")); // NOI18N
-        usernameField.setName("usernameEntry"); // NOI18N
-
-        passwordField.setText(resourceMap.getString("passwordEntry.text")); // NOI18N
-        passwordField.setName("passwordEntry"); // NOI18N
-
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(com.platymuus.mcurl.McUrlApp.class).getContext().getActionMap(SettingsView.class, this);
-        loginButton.setAction(actionMap.get("launchGame")); // NOI18N
-        loginButton.setLabel(resourceMap.getString("loginButton.label")); // NOI18N
-        loginButton.setName("loginButton"); // NOI18N
-
-        urlLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        urlLabel.setText(resourceMap.getString("addrLabel.text")); // NOI18N
-        urlLabel.setToolTipText(resourceMap.getString("addrLabel.toolTipText")); // NOI18N
-        urlLabel.setName("addrLabel"); // NOI18N
+        saveButton.setAction(actionMap.get("save")); // NOI18N
+        saveButton.setText(resourceMap.getString("saveButton.text")); // NOI18N
+        saveButton.setName("saveButton"); // NOI18N
 
         aboutLabel.setFont(resourceMap.getFont("aboutLabel.font")); // NOI18N
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         aboutLabel.setText(resourceMap.getString("aboutLabel.text")); // NOI18N
         aboutLabel.setToolTipText(resourceMap.getString("aboutLabel.toolTipText")); // NOI18N
         aboutLabel.setName("aboutLabel"); // NOI18N
+
+        cancelButton.setAction(actionMap.get("quit")); // NOI18N
+        cancelButton.setText(resourceMap.getString("cancelButton.text")); // NOI18N
+        cancelButton.setName("cancelButton"); // NOI18N
+
+        autofillCheck.setAction(actionMap.get("disableCheck")); // NOI18N
+        autofillCheck.setSelected(true);
+        autofillCheck.setText(resourceMap.getString("autofillCheck.text")); // NOI18N
+        autofillCheck.setName("autofillCheck"); // NOI18N
+
+        overrideCheck.setText(resourceMap.getString("overrideCheck.text")); // NOI18N
+        overrideCheck.setName("overrideCheck"); // NOI18N
+
+        noconfirmCheck.setText(resourceMap.getString("noconfirmCheck.text")); // NOI18N
+        noconfirmCheck.setName("noconfirmCheck"); // NOI18N
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -129,18 +129,17 @@ public class SettingsView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(overrideCheck, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                    .addComponent(autofillCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(noconfirmCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
                     .addComponent(titleLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                    .addComponent(urlLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                    .addComponent(loginButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                    .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                            .addComponent(usernameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(usernameField)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))
+                        .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -148,18 +147,16 @@ public class SettingsView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(titleLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(urlLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(usernameLabel)
-                    .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(passwordLabel)
-                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(loginButton)
+                .addComponent(autofillCheck)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noconfirmCheck)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(overrideCheck)
+                .addGap(7, 7, 7)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(saveButton)
+                    .addComponent(cancelButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                 .addComponent(aboutLabel)
                 .addContainerGap())
@@ -174,15 +171,14 @@ public class SettingsView extends FrameView {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel aboutLabel;
+    private javax.swing.JCheckBox autofillCheck;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JButton loginButton;
     private javax.swing.JPanel mainPanel;
-    private javax.swing.JPasswordField passwordField;
-    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JCheckBox noconfirmCheck;
+    private javax.swing.JCheckBox overrideCheck;
+    private javax.swing.JButton saveButton;
     private javax.swing.JLabel titleLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField usernameField;
-    private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 }

@@ -27,8 +27,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Properties;
+import java.util.Scanner;
 import org.jdesktop.application.SingleFrameApplication;
 
 /**
@@ -52,6 +56,38 @@ public class McUrlApp extends SingleFrameApplication {
      * Strings representing the address, username, and password chosen.
      */
     public static String address, username, password;
+    
+    /**
+     * Properties file containing user settings.
+     */
+    public static Properties properties;
+    
+    /**
+     * Launch minecraft.jar
+     */
+    public static void launchGame(String username, String password) throws IOException {
+        if (properties.getProperty("override", "off").equalsIgnoreCase("on")) {
+            File options = new File(LastLogin.getMinecraftDir(), "options.txt");
+            Scanner in = new Scanner(options);
+            String data = "";
+            while (in.hasNextLine()) {
+                String line = in.nextLine();
+                if (line.startsWith("lastServer")) {
+                    line = "lastServer:" + address;
+                }
+                data += line + "\n";
+            }
+            in.close();
+            PrintWriter out = new PrintWriter(new FileOutputStream(options));
+            out.print(data);
+            out.flush();
+            out.close();
+        }
+        Runtime.getRuntime().exec(new String[] {
+            "java", "-cp", "minecraft.jar", "net.minecraft.LauncherFrame",
+            username, password, address});
+        Runtime.getRuntime().exit(0);
+    }
 
     /**
      * This method is to initialize the specified window by injecting resources.
@@ -100,12 +136,14 @@ public class McUrlApp extends SingleFrameApplication {
         }
 
         // Pull from last login if we need to
-        LastLogin.calculate();
-        if (username.equals("")) {
-            username = LastLogin.username;
-        }
-        if (password.equals("") && username.equalsIgnoreCase(LastLogin.username)) {
-            password = LastLogin.password;
+        if (properties.getProperty("autofill", "on").equalsIgnoreCase("on")) {
+            LastLogin.calculate();
+            if (username.equals("")) {
+                username = LastLogin.username;
+            }
+            if (password.equals("") && username.equalsIgnoreCase(LastLogin.username)) {
+                password = LastLogin.password;
+            }
         }
         
         username = username.trim();
@@ -136,9 +174,16 @@ public class McUrlApp extends SingleFrameApplication {
      * Main method launching the application.
      */
     public static void main(String[] args) {
+        properties = new Properties();
+        try {
+            properties.load(new FileReader(new File("mcurl.properties")));
+        } catch (IOException ex) {
+            // we can work just fine with the defaults
+        }
+        
         System.out.println("McURL v1.0 by Tad Hardesty");
 
-        if (args.length != 1) return;        
+        if (args.length != 1) return;
         parseArgs(args[0]);
 
         File launcher = new File("minecraft.jar");
@@ -146,6 +191,16 @@ public class McUrlApp extends SingleFrameApplication {
             getLauncher(launcher);
         }
         
-        launch(McUrlApp.class, args);
+        if (properties.getProperty("noconfirm", "off").equalsIgnoreCase("on")
+                && properties.getProperty("autofill", "on").equalsIgnoreCase("on")
+                && !address.equalsIgnoreCase("settings")) {
+            try {
+                launchGame(username, password);
+            } catch (IOException ex) {
+                // not much we can do here either
+            }
+        } else {
+            launch(McUrlApp.class, args);
+        }
     }
 }

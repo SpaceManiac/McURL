@@ -49,11 +49,7 @@ public class McUrlView extends FrameView {
     @Action
     public void launchGame() {
         try {
-            Runtime.getRuntime().exec(new String[] {
-                "java", "-cp", "minecraft.jar", "net.minecraft.LauncherFrame",
-                usernameField.getText(), passwordField.getText(), McUrlApp.address
-            });
-            Runtime.getRuntime().exit(0);
+            McUrlApp.launchGame(usernameField.getText(), passwordField.getText());
         } catch (IOException ex) {
             urlLabel.setText("Error! " + ex.getMessage());
         }
