@@ -73,7 +73,7 @@ public class McUrlApp extends SingleFrameApplication {
             while (in.hasNextLine()) {
                 String line = in.nextLine();
                 if (line.startsWith("lastServer")) {
-                    line = "lastServer:" + address;
+                    line = "lastServer:" + address.replace(':', '_');
                 }
                 data += line + "\n";
             }
