@@ -70,12 +70,17 @@ public class McUrlApp extends SingleFrameApplication {
             File options = new File(LastLogin.getMinecraftDir(), "options.txt");
             Scanner in = new Scanner(options);
             String data = "";
+            boolean setLast = false;
             while (in.hasNextLine()) {
                 String line = in.nextLine();
                 if (line.startsWith("lastServer")) {
                     line = "lastServer:" + address.replace(':', '_');
+                    setLast = true;
                 }
                 data += line + "\n";
+            }
+            if (!setLast) {
+                data += "lastServer:" + address.replace(':', '_');
             }
             in.close();
             PrintWriter out = new PrintWriter(new FileOutputStream(options));
