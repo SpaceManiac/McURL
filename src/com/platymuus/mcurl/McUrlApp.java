@@ -45,12 +45,16 @@ public class McUrlApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        if (address.equalsIgnoreCase("settings")) {
+        if (initException != null) {
+            show(new ErrorView(this, initException));
+        } else if (address.equalsIgnoreCase("settings")) {
             show(new SettingsView(this));
         } else {
             show(new McUrlView(this));
         }
     }
+    
+    private static Exception initException;
     
     /**
      * Strings representing the address, username, and password chosen.
@@ -89,8 +93,13 @@ public class McUrlApp extends SingleFrameApplication {
             out.close();
         }
         Runtime.getRuntime().exec(new String[] {
-            "java", "-cp", "minecraft.jar", "net.minecraft.LauncherFrame",
-            username, password, address});
+            "java",
+            "-cp",
+            properties.getProperty("spout", "off").equalsIgnoreCase("on") ? "spoutcraft.jar" : "minecraft.jar",
+            "net.minecraft.LauncherFrame",
+            username,
+            password,
+            address});
         Runtime.getRuntime().exit(0);
     }
 
@@ -158,21 +167,19 @@ public class McUrlApp extends SingleFrameApplication {
      * Download the launcher jar from Amazon S3.
      * @param launcher A File representing the location to download to.
      */
-    private static void getLauncher(File launcher) {
-        try {
-            String url = "https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar";
-            BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(launcher), 1024);
-            byte data[] = new byte[1024];
-            int count;
-            while ((count = in.read(data, 0, 1024)) >= 0) {
-                out.write(data, 0, count);
-            }
-            out.close();
-            in.close();
-        } catch (IOException ex) {
-            address = "Error! " + ex.getMessage();
+    private static void getLauncher(File launcher, boolean spout) throws IOException {
+        String url = spout ?
+            "http://ci.getspout.org/job/Spoutcraft%20Launcher/promotion/latest/Recommended/artifact/target/launcher-dev-SNAPSHOT.jar" : 
+            "https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar";
+        BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(launcher), 1024);
+        byte data[] = new byte[1024];
+        int count;
+        while ((count = in.read(data, 0, 1024)) >= 0) {
+            out.write(data, 0, count);
         }
+        out.close();
+        in.close();
     }
 
     /**
@@ -186,14 +193,21 @@ public class McUrlApp extends SingleFrameApplication {
             // we can work just fine with the defaults
         }
         
-        System.out.println("McURL v1.0 by Tad Hardesty");
+        System.out.println("McURL v1.2 by Tad Hardesty");
 
         if (args.length != 1) return;
         parseArgs(args[0]);
 
-        File launcher = new File("minecraft.jar");
-        if (!launcher.exists()) {
-            getLauncher(launcher);
+        boolean spout = properties.getProperty("spout", "off").equalsIgnoreCase("on");
+        File launcher = new File(spout ? "spoutcraft.jar" : "minecraft.jar");
+        if (launcher.lastModified() < System.currentTimeMillis() - (1000 * 60 * 60 * 24)) { // only redownload launcher every 24 hours
+            try {
+                getLauncher(launcher, spout);
+            }
+            catch (IOException ex) {
+                initException = ex;
+                launch(McUrlApp.class, args);
+            }
         }
         
         if (properties.getProperty("noconfirm", "off").equalsIgnoreCase("on")
@@ -201,8 +215,10 @@ public class McUrlApp extends SingleFrameApplication {
                 && !address.equalsIgnoreCase("settings")) {
             try {
                 launchGame(username, password);
-            } catch (IOException ex) {
-                // not much we can do here either
+            }
+            catch (IOException ex) {
+                initException = ex;
+                launch(McUrlApp.class, args);
             }
         } else {
             launch(McUrlApp.class, args);

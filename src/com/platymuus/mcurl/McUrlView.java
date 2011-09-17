@@ -24,7 +24,6 @@
 package com.platymuus.mcurl;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
 import java.io.IOException;
 
@@ -32,16 +31,22 @@ import java.io.IOException;
  * The application's main frame.
  */
 public class McUrlView extends FrameView {
+    
+    private McUrlApp app;
 
-    public McUrlView(SingleFrameApplication app) {
+    public McUrlView(McUrlApp app) {
         super(app);
+        this.app = app;
 
         initComponents();
-
         getFrame().setResizable(false);
         getFrame().pack();
 
-        urlLabel.setText(McUrlApp.address);
+        if (McUrlApp.properties.getProperty("spout", "off").equalsIgnoreCase("on")) {
+            urlLabel.setText(McUrlApp.address + " (spout)");
+        } else {
+            urlLabel.setText(McUrlApp.address);
+        }
         usernameField.setText(McUrlApp.username);
         passwordField.setText(McUrlApp.password);
     }
@@ -51,7 +56,7 @@ public class McUrlView extends FrameView {
         try {
             McUrlApp.launchGame(usernameField.getText(), passwordField.getText());
         } catch (IOException ex) {
-            urlLabel.setText("Error! " + ex.getMessage());
+            app.show(new ErrorView(app, ex));
         }
     }
 

@@ -23,20 +23,25 @@
  */
 package com.platymuus.mcurl;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * The application's main frame.
  */
 public final class SettingsView extends FrameView {
+    
+    private McUrlApp app;
 
-    public SettingsView(SingleFrameApplication app) {
+    public SettingsView(McUrlApp app) {
         super(app);
+        this.app = app;
+        
         initComponents();
         getFrame().setResizable(false);
         getFrame().pack();
@@ -55,15 +60,16 @@ public final class SettingsView extends FrameView {
 
     @Action
     public void save() {
+        McUrlApp.properties.setProperty("spout", spoutCheck.isSelected() ? "on" : "off");
         McUrlApp.properties.setProperty("autofill", autofillCheck.isSelected() ? "on" : "off");
         McUrlApp.properties.setProperty("noconfirm", noconfirmCheck.isSelected() ? "on" : "off");
         McUrlApp.properties.setProperty("override", overrideCheck.isSelected() ? "on" : "off");
         try {
             McUrlApp.properties.store(new FileOutputStream(new File("mcurl.properties")), "McURL settings file");
+            Runtime.getRuntime().exit(0);
         } catch (IOException ex) {
-            // not much we can do about it
+            app.show(new ErrorView(app, ex));
         }
-        Runtime.getRuntime().exit(0);
     }
 
     /** This method is called from within the constructor to
@@ -83,8 +89,11 @@ public final class SettingsView extends FrameView {
         autofillCheck = new javax.swing.JCheckBox();
         overrideCheck = new javax.swing.JCheckBox();
         noconfirmCheck = new javax.swing.JCheckBox();
+        spoutCheck = new javax.swing.JCheckBox();
+        spoutLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
+        jLabel1 = new javax.swing.JLabel();
 
         mainPanel.setMaximumSize(new java.awt.Dimension(272, 145));
         mainPanel.setMinimumSize(new java.awt.Dimension(272, 145));
@@ -122,6 +131,20 @@ public final class SettingsView extends FrameView {
         noconfirmCheck.setText(resourceMap.getString("noconfirmCheck.text")); // NOI18N
         noconfirmCheck.setName("noconfirmCheck"); // NOI18N
 
+        spoutCheck.setText(resourceMap.getString("spoutCheck.text")); // NOI18N
+        spoutCheck.setName("spoutCheck"); // NOI18N
+
+        spoutLabel.setForeground(resourceMap.getColor("spoutLabel.foreground")); // NOI18N
+        spoutLabel.setText(resourceMap.getString("spoutLabel.text")); // NOI18N
+        spoutLabel.setToolTipText(resourceMap.getString("spoutLabel.toolTipText")); // NOI18N
+        spoutLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        spoutLabel.setName("spoutLabel"); // NOI18N
+        spoutLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                spoutLabelMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -129,35 +152,43 @@ public final class SettingsView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addComponent(spoutCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spoutLabel))
                     .addComponent(overrideCheck, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                     .addComponent(autofillCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(noconfirmCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
                     .addComponent(titleLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                    .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                         .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(20, 20, 20)
                 .addComponent(titleLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spoutCheck)
+                    .addComponent(spoutLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(autofillCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(noconfirmCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(overrideCheck)
-                .addGap(7, 7, 7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(saveButton)
                     .addComponent(cancelButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(aboutLabel)
                 .addContainerGap())
         );
@@ -167,18 +198,34 @@ public final class SettingsView extends FrameView {
         jTextPane1.setName("jTextPane1"); // NOI18N
         jScrollPane1.setViewportView(jTextPane1);
 
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
+
         setComponent(mainPanel);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void spoutLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_spoutLabelMouseClicked
+        try {
+            Desktop.getDesktop().browse(URI.create("http://spout.in/about"));
+        }
+        catch (IOException ex) {
+            app.show(new ErrorView(app, ex));
+        }
+    }//GEN-LAST:event_spoutLabelMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel aboutLabel;
     private javax.swing.JCheckBox autofillCheck;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JCheckBox noconfirmCheck;
     private javax.swing.JCheckBox overrideCheck;
     private javax.swing.JButton saveButton;
+    private javax.swing.JCheckBox spoutCheck;
+    private javax.swing.JLabel spoutLabel;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
 }
