@@ -30,9 +30,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.SingleFrameApplication;
 
 /**
@@ -55,6 +58,11 @@ public class McUrlApp extends SingleFrameApplication {
     }
     
     private static Exception initException;
+
+    /**
+     * The 'toplevel' file. Equates to the directory containing this jar.
+     */
+    public static File toplevelFile;
     
     /**
      * Strings representing the address, username, and password chosen.
@@ -186,20 +194,30 @@ public class McUrlApp extends SingleFrameApplication {
      * Main method launching the application.
      */
     public static void main(String[] args) {
+        try {
+            // move directory to the McURL location if we can manage
+            toplevelFile = new File(McUrlApp.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+        }
+        catch (URISyntaxException ex) {
+            initException = ex;
+            launch(McUrlApp.class, args);
+            return;
+        }
+
         properties = new Properties();
         try {
-            properties.load(new FileReader(new File("mcurl.properties")));
+            properties.load(new FileReader(new File(toplevelFile, "mcurl.properties")));
         } catch (IOException ex) {
             // we can work just fine with the defaults
         }
-        
+
         System.out.println("McURL v1.2 by Tad Hardesty");
 
         if (args.length != 1) return;
         parseArgs(args[0]);
 
         boolean spout = properties.getProperty("spout", "off").equalsIgnoreCase("on");
-        File launcher = new File(spout ? "spoutcraft.jar" : "minecraft.jar");
+        File launcher = new File(toplevelFile, spout ? "spoutcraft.jar" : "minecraft.jar");
         if (launcher.lastModified() < System.currentTimeMillis() - (1000 * 60 * 60 * 24)) { // only redownload launcher every 24 hours
             try {
                 getLauncher(launcher, spout);
@@ -207,9 +225,10 @@ public class McUrlApp extends SingleFrameApplication {
             catch (IOException ex) {
                 initException = ex;
                 launch(McUrlApp.class, args);
+                return;
             }
         }
-        
+
         if (properties.getProperty("noconfirm", "off").equalsIgnoreCase("on")
                 && properties.getProperty("autofill", "on").equalsIgnoreCase("on")
                 && !address.equalsIgnoreCase("settings")) {

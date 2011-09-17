@@ -24,6 +24,11 @@
 package com.platymuus.mcurl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
 import java.io.PrintStream;
@@ -41,13 +46,36 @@ public class ErrorView extends FrameView {
         getFrame().setResizable(false);
         getFrame().pack();
         
-        String prefix = "McURL has encountered an error. Please report the following error message on " +
-            "the Minecraft \nforums or Bukkit forums, or send an email report with the title" + 
+        String report = "McURL has encountered an error. Please report the following error message on " +
+            "the Minecraft \nforums or Bukkit forums, or send an email report with the title " + 
             "\"McURL Crash Report\" to: \ntad.hardesty@platymuus.com.\n\n";
+        
+        report += "OS: " + System.getProperty("os.name") + ", " + System.getProperty("os.version") + ", " + System.getProperty("os.arch") + "\n";
+        report += "Java: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.version") + "\n";
+        report += "File stats: \n";
+        report += "\tToplevel file = " + McUrlApp.toplevelFile + "\n";
+        report += "\tAbsolute working dir = " + new File(".").getAbsolutePath() + "\n";
+        try {
+            report += "\tCanonical working dir = " + new File(".").getCanonicalPath() + "\n";
+        }
+        catch (IOException ex1) {
+            report += "\tIOException retreiving canonical working dir: " + ex1.getMessage() + "\n";
+        }
+        try {
+            report += "\tThis jarfile = " + McUrlApp.class.getProtectionDomain().getCodeSource().getLocation().toURI() + "\n";
+        }
+        catch (URISyntaxException ex1) {
+            report += "\tURISyntaxException retreiving this jarfile: " + ex1.getMessage() + "\n";
+        }
+        File mcJar = new File("minecraft.jar");
+        report += "\tminecraft.jar = " + mcJar.exists() + ", " + mcJar.lastModified() + "\n";
+        report += "\n";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ex.printStackTrace(new PrintStream(baos));
-        errorPane.setText(prefix + baos.toString());
+        report += baos.toString();
+        
+        errorPane.setText(report.replace("\t", "    "));
         errorPane.setSelectionStart(0);
         errorPane.setSelectionEnd(0);
     }
@@ -69,8 +97,6 @@ public class ErrorView extends FrameView {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
 
-        mainPanel.setMaximumSize(new java.awt.Dimension(272, 145));
-        mainPanel.setMinimumSize(new java.awt.Dimension(272, 145));
         mainPanel.setName("mainPanel"); // NOI18N
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(com.platymuus.mcurl.McUrlApp.class).getContext().getResourceMap(ErrorView.class);
@@ -95,26 +121,26 @@ public class ErrorView extends FrameView {
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(aboutLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(aboutLabel)
-                .addGap(10, 10, 10))
+                .addGap(6, 6, 6))
         );
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N

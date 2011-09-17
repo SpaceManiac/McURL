@@ -65,7 +65,7 @@ public final class SettingsView extends FrameView {
         McUrlApp.properties.setProperty("noconfirm", noconfirmCheck.isSelected() ? "on" : "off");
         McUrlApp.properties.setProperty("override", overrideCheck.isSelected() ? "on" : "off");
         try {
-            McUrlApp.properties.store(new FileOutputStream(new File("mcurl.properties")), "McURL settings file");
+            McUrlApp.properties.store(new FileOutputStream(new File(McUrlApp.toplevelFile, "mcurl.properties")), "McURL settings file");
             Runtime.getRuntime().exit(0);
         } catch (IOException ex) {
             app.show(new ErrorView(app, ex));
